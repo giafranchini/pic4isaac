@@ -1,0 +1,28 @@
+robots:
+    jackal:
+        name: "jackal"
+        isaac_asset_path: "/root/giacomo_ws/src/jackal/jackal_simulator/jackal_isaac/description/jackal_isaac.usd"
+        wheel_joint_names: ["front_left_wheel_joint", "front_right_wheel_joint", "rear_left_wheel_joint", "rear_right_wheel_joint"]
+        position: [0.0, 0.0, 0.5]
+        orientation: [0.0, 0.0, 0.0, -1.0]
+        cameras:
+            camera_color:
+                prim_path: "/camera_color_optical_frame/camera_color"
+                enable_rgb: True
+                enable_depth: True
+            camera_left:
+                prim_path: "/camera_infra1_optical_frame/camera_left"
+                enable_rgb: True
+                enable_depth: False
+            camera_right:
+                prim_path: "/camera_infra2_optical_frame/camera_right"
+                enable_rgb: True
+                enable_depth: False
+        lidar:
+            prim_path: "/front_laser/lidar"
+        imu:
+            prim_path: "/imu_link/imu"
+
+stage:
+    usd_path: "/root/giacomo_ws/pergola/vigna_a_pergola_default.usd"
+    root_prim_path: "/Empty"
