@@ -49,7 +49,7 @@ class IsaacBase():
     
     def add_usd_to_stage(self, usd_path : str, root_prim_path : str):
         # add as child of world as default
-        # NB: usd needs to have a default prim 
+        # NB: USD needs to have a default prim 
         prim_path = os.path.join(self.root_prim, root_prim_path)
         stage.add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
 

@@ -46,12 +46,10 @@ class IsaacRos(IsaacBase):
         ])
         self.graph_dict[self.gc.Keys.SET_VALUES] = ([
             ("ros2_context.inputs:domain_id", 89),
-            # ("node_namespace.inputs:value", f"/{robot.name}"),
             ("ros2_subscribe_joint_states.inputs:topicName", "/isaac_joint_commands"),
             ("ros2_publish_joint_states.inputs:topicName", "/isaac_joint_states"),
             ("isaac_articulation_controller.inputs:usePath", True),
             ("isaac_articulation_controller.inputs:robotPath", robot.prim_path),
-            # ("ros2_publish_tf.inputs:targetPrims", prims.get_prim_at_path(robot.prim_path)),
         ])
     
     def __create_cameras_nodes(self, robot, cameras):
@@ -62,13 +60,7 @@ class IsaacRos(IsaacBase):
             ("on_playback_tick", "omni.graph.action.OnPlaybackTick"),
             ("ros2_context", "omni.isaac.ros2_bridge.ROS2Context"),
             ("read_sim_time", "omni.isaac.core_nodes.IsaacReadSimulationTime"),
-            # ("tf_publisher", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
         ])
-        # self.graph_dict[self.gc.Keys.CONNECT] = ([
-        #     ("on_playback_tick.outputs:tick", "tf_publisher.inputs:execIn"),
-        #     ("ros2_context.outputs:context", "tf_publisher.inputs:context"),
-        #     ("read_sim_time.outputs:simulationTime", "tf_publisher.inputs:timeStamp"),
-        # ])
         self.graph_dict[self.gc.Keys.SET_VALUES] = ([
             ("ros2_context.inputs:domain_id", 89),
         ])
@@ -86,7 +78,6 @@ class IsaacRos(IsaacBase):
                 (f"enable_{cam_name}_rgb", "omni.graph.action.Branch"),
                 (f"enable_{cam_name}_depth", "omni.graph.action.Branch"),
                 (f"{cam_name}_node_namespace", "omni.graph.nodes.ConstantString"),
- 
             ])
             self.graph_dict[self.gc.Keys.CONNECT].extend([
                 ("on_playback_tick.outputs:tick", f"isaac_create_viewport_{cam_name}.inputs:execIn"),
@@ -142,7 +133,6 @@ class IsaacRos(IsaacBase):
             ("pcl_reader", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
             ("laser_scan_publisher", "omni.isaac.ros2_bridge.ROS2PublishLaserScan"),
             ("pcl_publisher", "omni.isaac.ros2_bridge.ROS2PublishPointCloud"),
-            # ("tf_publisher", "omni.isaac.ros2_bridge.ROS2PublishTransformTree"),
         ])
         self.graph_dict[self.gc.Keys.CONNECT] = ([
             ("on_playback_tick.outputs:tick", "laser_scan_reader.inputs:execIn"),
@@ -167,20 +157,11 @@ class IsaacRos(IsaacBase):
             ("ros2_context.outputs:context", "pcl_publisher.inputs:context"),
             ("pcl_reader.outputs:pointCloudData", "pcl_publisher.inputs:pointCloudData"),
             ("read_sim_time.outputs:simulationTime", "pcl_publisher.inputs:timeStamp"),
-            
-            # ("on_playback_tick.outputs:tick", "tf_publisher.inputs:execIn"),
-            # ("ros2_context.outputs:context", "tf_publisher.inputs:context"),
-            # ("read_sim_time.outputs:simulationTime", "tf_publisher.inputs:timeStamp"),
         ])
         self.graph_dict[self.gc.Keys.SET_VALUES] = ([
             ("ros2_context.inputs:domain_id", 89),
             ("laser_scan_publisher.inputs:frameId", "lidar"),
-            # ("laser_scan_publisher.inputs:topicName", "sim_lidar"),
-            # ("laser_scan_publisher.inputs:nodeNamespace", f"/{robot.name}"),
-
             ("pcl_publisher.inputs:frameId", "lidar"),
-            # ("pcl_publisher.inputs:topicName", "sim_lidar"),
-            # ("pcl_publisher.inputs:nodeNamespace", f"/{robot.name}"),
         ])
     
     def __create_ros_control_graph(self, robot):
@@ -193,7 +174,6 @@ class IsaacRos(IsaacBase):
         self.gc.edit(edit_commands=self.graph_dict)
         set_target_prims(primPath=f"{graph_name}/ros2_publish_joint_states", targetPrimPaths=[robot.prim_path])
         set_target_prims(primPath=f"{graph_name}/isaac_articulation_controller", targetPrimPaths=[robot.prim_path])
-        # set_target_prims(primPath=f"{graph_name}/ros2_publish_tf", targetPrimPaths=[robot.prim_path])
         prims.set_targets(
             prim=stage.get_current_stage().GetPrimAtPath(f"{graph_name}/ros2_publish_tf"),
             attribute="inputs:targetPrims",
@@ -212,8 +192,6 @@ class IsaacRos(IsaacBase):
         #TODO: move this in a separate method
         for cam_name, cam_conf in cameras.items():
             set_cam_prim_path = f"{graph_name}/isaac_set_{cam_name}"
-            # TODO: publish sensor frames with robot state publisher
-            # tf_pub_prim_path = f"{graph_name}/tf_publisher"
             cam_prim_path = robot.prim_path + cam_conf.get("prim_path")
             cam_prim_paths.append(cam_prim_path)
             # set cameras to viewports
@@ -222,13 +200,6 @@ class IsaacRos(IsaacBase):
                 attribute="inputs:cameraPrim",
                 target_prim_paths=[cam_prim_path],
             )
-        # TODO: publish sensor frames with robot state publisher
-        # publish camera frames to tf
-        # prims.set_targets(
-        #         prim=stage.get_current_stage().GetPrimAtPath(tf_pub_prim_path),
-        #         attribute="inputs:targetPrims",
-        #         target_prim_paths=cam_prim_paths,
-        #     )
     
     def __create_lidar_graph(self, robot, lidar):
         self.__init_controller()
@@ -247,14 +218,6 @@ class IsaacRos(IsaacBase):
                     attribute="inputs:lidarPrim",
                     target_prim_paths=[lidar_prim_path],
                 )
-        # TODO: publish sensor frames with robot state publisher
-        # tf_pub_prim_path = f"{graph_name}/tf_publisher"
-        # # publish lidar frame to tf
-        # prims.set_targets(
-        #         prim=stage.get_current_stage().GetPrimAtPath(tf_pub_prim_path),
-        #         attribute="inputs:targetPrims",
-        #         target_prim_paths=[lidar_prim_path],
-        #     )
 
     def __create_omnigraph(self):
         for r in self.get_robot_assets():
