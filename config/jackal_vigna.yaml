@@ -20,6 +20,8 @@ robots:
                 enable_depth: False
         lidar:
             prim_path: "/front_laser/lidar"
+            enable_scan: True
+            enable_pcl: True
         imu:
             prim_path: "/imu_link/imu"
 

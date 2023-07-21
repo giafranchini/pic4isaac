@@ -124,7 +124,7 @@ class IsaacRos(IsaacBase):
 
             viewport_id += 1
     
-    def __create_lidar_nodes(self, robot):
+    def __create_lidar_nodes(self, robot, lidar_conf):
         self.graph_dict[self.gc.Keys.CREATE_NODES] = ([
             ("on_playback_tick", "omni.graph.action.OnPlaybackTick"),
             ("ros2_context", "omni.isaac.ros2_bridge.ROS2Context"),
@@ -133,9 +133,12 @@ class IsaacRos(IsaacBase):
             ("pcl_reader", "omni.isaac.range_sensor.IsaacReadLidarPointCloud"),
             ("laser_scan_publisher", "omni.isaac.ros2_bridge.ROS2PublishLaserScan"),
             ("pcl_publisher", "omni.isaac.ros2_bridge.ROS2PublishPointCloud"),
+            ("enable_scan", "omni.graph.action.Branch"),
+            ("enable_pcl", "omni.graph.action.Branch"),
         ])
         self.graph_dict[self.gc.Keys.CONNECT] = ([
-            ("on_playback_tick.outputs:tick", "laser_scan_reader.inputs:execIn"),
+            ("on_playback_tick.outputs:tick", "enable_scan.inputs:execIn"),
+            ("enable_scan.outputs:execTrue", "laser_scan_reader.inputs:execIn"),
             ("ros2_context.outputs:context", "laser_scan_publisher.inputs:context"),
             ("laser_scan_reader.outputs:execOut", "laser_scan_publisher.inputs:execIn"),
             ("laser_scan_reader.outputs:horizontalFov", "laser_scan_publisher.inputs:horizontalFov"),
@@ -152,7 +155,8 @@ class IsaacRos(IsaacBase):
             # ("laser_scan_reader.outputs:zenithRange", "laser_scan_publisher.inputs:zenithRange"),
             ("read_sim_time.outputs:simulationTime", "laser_scan_publisher.inputs:timeStamp"),
             
-            ("on_playback_tick.outputs:tick", "pcl_reader.inputs:execIn"),
+            ("on_playback_tick.outputs:tick", "enable_pcl.inputs:execIn"),
+            ("enable_pcl.outputs:execTrue", "pcl_reader.inputs:execIn"),
             ("pcl_reader.outputs:execOut", "pcl_publisher.inputs:execIn"),
             ("ros2_context.outputs:context", "pcl_publisher.inputs:context"),
             ("pcl_reader.outputs:pointCloudData", "pcl_publisher.inputs:pointCloudData"),
@@ -160,8 +164,12 @@ class IsaacRos(IsaacBase):
         ])
         self.graph_dict[self.gc.Keys.SET_VALUES] = ([
             ("ros2_context.inputs:domain_id", 89),
+            ("laser_scan_publisher.inputs:nodeNamespace", f"/{robot.name}/lidar"),
             ("laser_scan_publisher.inputs:frameId", "lidar"),
+            ("pcl_publisher.inputs:nodeNamespace", f"/{robot.name}/lidar"),
             ("pcl_publisher.inputs:frameId", "lidar"),
+            ("enable_scan.inputs:condition", lidar_conf.get("enable_scan")),
+            ("enable_pcl.inputs:condition", lidar_conf.get("enable_pcl")),
         ])
     
     def __create_ros_control_graph(self, robot):
@@ -207,7 +215,7 @@ class IsaacRos(IsaacBase):
         self.gc.edit(
             {"graph_path": graph_name, "evaluator_name": "execution"},
         )
-        self.__create_lidar_nodes(robot)
+        self.__create_lidar_nodes(robot, lidar)
         self.gc.edit(edit_commands=self.graph_dict)
         lidar_prim_path = robot.prim_path + lidar.get("prim_path")
         tmp = ["laser_scan_reader", "pcl_reader"]
