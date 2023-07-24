@@ -7,14 +7,17 @@ robots:
         orientation: [0.0, 0.0, 0.0, -1.0]
         cameras:
             camera_color:
+                frame_id: "camera_color_optical_frame"
                 prim_path: "/camera_color_optical_frame/camera_color"
                 enable_rgb: True
                 enable_depth: True
             camera_left:
+                frame_id: "camera_infra1_optical_frame"
                 prim_path: "/camera_infra1_optical_frame/camera_left"
                 enable_rgb: True
                 enable_depth: False
             camera_right:
+                frame_id: "camera_infra2_optical_frame"
                 prim_path: "/camera_infra2_optical_frame/camera_right"
                 enable_rgb: True
                 enable_depth: False
@@ -28,3 +31,4 @@ robots:
 stage:
     usd_path: "/root/giacomo_ws/pergola/vigna_a_pergola_default.usd"
     root_prim_path: "/Empty"
+    physics_update_rate: 400.0 # as set in examples - rendering is 8 times slower

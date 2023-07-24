@@ -10,15 +10,15 @@ import numpy as np
 import os
 from collections import namedtuple
 
-robot_namedtuple = namedtuple("Robot", ["robot_object", "cameras", "lidar"])
+robot_namedtuple = namedtuple("Robot", ["robot_object", "cameras", "lidar", "imu"])
 
 class IsaacBase():
-    def __init__(self, simulation_app):
+    def __init__(self, simulation_app, physics_rate):
         self.__simulation_app = simulation_app
-        self.__simulation_context = World()
-        self.root_prim = str((prims.create_prim(prim_path="/World/map")).GetPath())
+        self.__simulation_context = World(stage_units_in_meters=1.0, physics_dt=1/physics_rate, rendering_dt=8/physics_rate)
+        self.root_prim = str((prims.create_prim(prim_path="/World")).GetPath())
         self.update()
-        self.robots = [] # robots is a list of namedtuple (robot [WheeledRobot object], cameras [dict], lidar [dict])
+        self.robots = [] # robots is a list of namedtuple (robot [WheeledRobot object], cameras [dict], lidar [dict], imu [dict])
 
     def __get_assets_root_path(self):
         assets_root_path = nucleus.get_assets_root_path()
@@ -73,7 +73,8 @@ class IsaacBase():
                 ))
             cameras = r_conf.get("cameras")
             lidar = r_conf.get("lidar")
-            self.robots.append(robot_namedtuple(robot_obj, cameras, lidar))
+            imu = r_conf.get("imu")
+            self.robots.append(robot_namedtuple(robot_obj, cameras, lidar, imu))
 
     def get_robot_assets(self):
         return self.robots

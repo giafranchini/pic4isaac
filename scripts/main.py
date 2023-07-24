@@ -21,7 +21,7 @@ sim_app = SimulationApp()
 from isaac_sim_ros import IsaacRos
 
 def main():
-    isaac_ros_simulation = IsaacRos(sim_app)
+    isaac_ros_simulation = IsaacRos(sim_app, stage_config.get("physics_update_rate"))
     isaac_ros_simulation.add_default_ground_plane()
     isaac_ros_simulation.add_usd_to_stage(stage_config.get("usd_path"), stage_config.get("root_prim_path"))
     isaac_ros_simulation.spawn_robots(robot_config)
